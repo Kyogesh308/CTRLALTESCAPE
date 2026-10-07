@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CTRL + ALT + ESCAPE — AI & Tech Escape Room. Form a team, solve 6 levels, bring NEXUS back online.">
+  <title>CTRL + ALT + ESCAPE | AI & Tech Escape Room</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* ====== LANDING PAGE SPECIFIC ====== */
+    body { background: var(--bg); min-height: 100vh; }
+
+    /* Hero background */
+    .hero-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(79,70,229,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 100% 80%, rgba(6,182,212,0.06) 0%, transparent 60%);
+    }
+    .hero-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(79,70,229,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,70,229,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* Header */
+    .landing-header {
+      position: relative; z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(12px);
+    }
+    .header-logos {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .header-logo-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-logo-item img {
+      height: 64px;
+      width: auto;
+      object-fit: contain;
+    }
+    .header-logo-divider {
+      width: 1px; height: 48px;
+      background: var(--border);
+    }
+    .header-tagline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sec);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .header-dot { color: var(--primary); }
+    .header-line {
+      width: 40px; height: 2px;
+      background: var(--grad-accent);
+      border-radius: 2px;
+    }
+
+    /* Main content */
+    .landing-main {
+      position: relative; z-index: 10;
+      padding: 60px 48px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+    }
+
+    /* Hero title */
+    .hero-title {
+      text-align: center;
+    }
+    .hero-title h1 {
+      font-size: clamp(44px, 7vw, 80px);
+      font-weight: 900;
+      letter-spacing: -3px;
+      line-height: 1.05;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .hero-title h1 .escape-word { color: var(--primary); }
+    .hero-title h1 .plus-word { color: var(--text-sec); }
+    .hero-subtitle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-sec);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-full);
+      padding: 6px 18px;
+      background: var(--surface);
+    }
+    .hero-tagline {
+      margin-top: 16px;
+      font-size: 17px;
+      color: var(--text-sec);
+      max-width: 480px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .hero-tagline strong { color: var(--text); }
+
+    /* Login cards container */
+    .login-cards {
+      display: flex;
+      gap: 28px;
+      align-items: stretch;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* Login card */
+    .login-card {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-2xl);
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: all var(--transition);
+    }
+    .login-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(79,70,229,0.2); }
+    .login-card-header {
+      text-align: center;
+    }
+    .login-card-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 26px;
+    }
+    .participant-icon { background: linear-gradient(135deg, #EEF2FF, #E0E7FF); }
+    .admin-icon { background: linear-gradient(135deg, #F5F3FF, #EDE9FE); }
+    .login-card-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .login-card-desc { font-size: 13px; color: var(--text-sec); }
+
+    .login-card-divider { background: var(--primary); opacity: 0.15; }
+
+    /* Form */
+    .login-form { display: flex; flex-direction: column; gap: 14px; }
+    .form-field-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 10px 14px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-field-group:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+    }
+    .form-field-group.error { border-color: var(--danger); }
+    .form-field-icon { color: var(--text-sec); flex-shrink: 0; }
+    .form-field-inner { flex: 1; min-width: 0; }
+    .form-field-inner input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+    }
+    .form-field-inner input::placeholder { color: var(--locked); }
+    .form-field-inner label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-sec);
+      margin-bottom: 2px;
+    }
+    .form-field-eye {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-sec); padding: 0;
+      transition: color var(--transition);
+    }
+    .form-field-eye:hover { color: var(--primary); }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--r-lg);
+      font-size: 15px;
+    }
+    .participant-btn { background: var(--grad-primary); }
+    .admin-btn { background: var(--grad-primary); }
+
+    .login-card-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--r-md);
+      font-size: 12px;
+      color: var(--text-sec);
+      line-height: 1.5;
+    }
+    .login-card-note.info { background: var(--primary-l); color: var(--primary); }
+    .login-card-note.warning { background: var(--warning-l); color: var(--warning); }
+
+    .error-message {
+      display: none;
+      background: var(--danger-l);
+      border: 1px solid rgba(220,38,38,0.2);
+      border-radius: var(--r-md);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--danger);
+      font-weight: 500;
+      animation: shake 0.4s ease;
+    }
+    .error-message.visible { display: block; }
+    .success-message {
+      display: none;
+      background: var(--success-l);
+      border: 1px solid rgba(22,163,74,0.2);
+      border-radius: var(--r-md);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--success);
+      font-weight: 500;
+    }
+    .success-message.visible { display: flex; align-items: center; gap: 8px; }
+
+    /* Feature cards */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 900px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .feature-icon { font-size: 22px; flex-shrink: 0; }
+    .feature-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .feature-desc { font-size: 12px; color: var(--text-sec); line-height: 1.4; }
+
+    /* Footer */
+    .landing-footer {
+      position: relative; z-index: 10;
+      padding: 16px 48px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.7);
+    }
+    .footer-text { font-size: 12px; color: var(--text-sec); }
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-sec);
+    }
+
+    /* Placeholder helper */
+    .placeholder-helper {
+      background: linear-gradient(135deg, var(--accent-l), #F0FFFE);
+      border: 1px solid rgba(6,182,212,0.3);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--accent);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <!-- Header -->
+  <header class="landing-header">
+    <div class="header-logos">
+      <div class="header-logo-item">
+        <img src="/assets/college_logo.png" alt="College Logo" id="college-logo">
+      </div>
+      <div class="header-logo-divider"></div>
+      <div class="header-logo-item">
+        <img src="/assets/ieee_logo.png" alt="IEEE Student Branch" id="ieee-logo">
+      </div>
+      <div class="header-logo-divider"></div>
+      <div class="header-logo-item">
+        <img src="/assets/ras_logo.png" alt="Robotics & Automation Society" id="ras-logo">
+      </div>
+    </div>
+    <div class="header-tagline">
+      THINK <span class="header-dot">•</span>
+      SOLVE <span class="header-dot">•</span>
+      COLLABORATE <span class="header-dot">•</span>
+      ESCAPE
+      <div class="header-line"></div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="landing-main">
+    <!-- Hero Title -->
+    <div class="hero-title">
+      <h1>CTRL <span class="plus-word">+</span> ALT <span class="plus-word">+</span> <span class="escape-word">ESCAPE</span></h1>
+      <div class="hero-subtitle">
+        <span>⚡</span>
+        AI &amp; TECH ESCAPE ROOM
+      </div>
+      <p class="hero-tagline">
+        An experimental AI system has been compromised.<br>
+        <strong>Recover all security keys and bring it back online.</strong>
+      </p>
+    </div>
+
+    <!-- Login Cards -->
+    <div class="login-cards">
+      <!-- Participant Login -->
+      <div class="login-card" id="participant-card">
+        <div class="login-card-header">
+          <div class="login-card-icon participant-icon">👥</div>
+          <div class="login-card-title">Participant Login</div>
+          <div class="login-card-desc">Join the mission. Form a team. Solve. Escape.</div>
+        </div>
+
+        <div class="placeholder-helper" id="placeholder-helper">
+          <strong>💡 First time login?</strong> If you received special credentials, the name you enter will become your operator name.
+        </div>
+
+        <form class="login-form" id="participant-form" onsubmit="participantLogin(event)">
+          <div class="form-field-group" id="name-field">
+            <div class="form-field-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+            </div>
+            <div class="form-field-inner">
+              <label for="p-name">Full Name</label>
+              <input type="text" id="p-name" placeholder="Enter your full name" autocomplete="name" required>
+            </div>
+          </div>
+
+          <div class="form-field-group" id="roll-field">
+            <div class="form-field-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </div>
+            <div class="form-field-inner">
+              <label for="p-roll">Roll Number</label>
+              <input type="text" id="p-roll" placeholder="Use the roll number for the event" autocomplete="off" required>
+            </div>
+          </div>
+
+          <div class="form-field-group" id="email-field">
+            <div class="form-field-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div class="form-field-inner">
+              <label for="p-email">Email Address</label>
+              <input type="email" id="p-email" placeholder="Use the registered email ID" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="error-message" id="p-error"></div>
+          <div class="success-message" id="p-success">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Identity verified! Redirecting…</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary login-btn participant-btn" id="p-submit-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+            Login as Participant →
+          </button>
+        </form>
+
+        <div class="login-card-note info">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          You will be able to create a team or join a team after successful login. No email invitations used.
+        </div>
+      </div>
+
+      <!-- Admin Login -->
+      <div class="login-card" id="admin-card">
+        <div class="login-card-header">
+          <div class="login-card-icon admin-icon">👑</div>
+          <div class="login-card-title">Admin Login</div>
+          <div class="login-card-desc">Event control panel. Monitor. Evaluate. Manage.</div>
+        </div>
+
+        <form class="login-form" id="admin-form" onsubmit="adminLogin(event)">
+          <div class="form-field-group" id="admin-user-field">
+            <div class="form-field-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+            </div>
+            <div class="form-field-inner">
+              <label for="a-username">Admin Username</label>
+              <input type="text" id="a-username" placeholder="Authorized personnel only" autocomplete="off" required>
+            </div>
+          </div>
+
+          <div class="form-field-group" id="admin-pass-field">
+            <div class="form-field-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="form-field-inner">
+              <label for="a-password">Admin Password</label>
+              <input type="password" id="a-password" placeholder="Keep your credentials secure" autocomplete="current-password" required>
+            </div>
+            <button type="button" class="form-field-eye" id="toggle-pass" onclick="togglePassword()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+
+          <div class="error-message" id="a-error"></div>
+
+          <button type="submit" class="btn btn-primary login-btn admin-btn" id="a-submit-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Login as Admin →
+          </button>
+        </form>
+
+        <div class="login-card-note warning">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          This area is restricted to event organizers only. All actions are logged.
+        </div>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <div>
+          <div class="feature-title">Team Based Challenge</div>
+          <div class="feature-desc">Form a team of 3–4 members and work together to solve 6 levels.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚙️</div>
+        <div>
+          <div class="feature-title">6 Unique Levels</div>
+          <div class="feature-desc">From AI to cybersecurity, test your skills across domains.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <div>
+          <div class="feature-title">Compete &amp; Win</div>
+          <div class="feature-desc">Solve challenges, earn the fastest time and claim victory.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💡</div>
+        <div>
+          <div class="feature-title">Think. Solve. Escape.</div>
+          <div class="feature-desc">Logic, creativity and collaboration will bring the system back online.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="footer-text">© 2026 CTRL + ALT + ESCAPE | AI &amp; Tech Escape Room</div>
+    <div class="footer-right">
+      <div style="width:40px;height:2px;background:var(--grad-accent);border-radius:2px;"></div>
+      Organized by Robotics &amp; Automation Society
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script>
+    // Check if already logged in and redirect
+    (async function() {
+      const token = API.getSession();
+      if (token) {
+        const r = await API.get('/api/participant/me');
+        if (r.ok) {
+          window.location.href = '/participant.html';
+          return;
+        } else {
+          API.setSession(null);
+        }
+      }
+      const adminToken = API.getAdminToken();
+      if (adminToken) {
+        const r = await API.get('/api/admin/overview');
+        if (r.ok) {
+          window.location.href = '/admin.html';
+          return;
+        } else {
+          API.setAdminToken(null);
+        }
+      }
+    })();
+
+    function togglePassword() {
+      const input = document.getElementById('a-password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function setLoading(btnId, loading, text) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      if (loading) {
+        btn.classList.add('loading');
+        btn.dataset.original = btn.innerHTML;
+        btn.innerHTML = `<span>${text || 'Verifying…'}</span>`;
+      } else {
+        btn.classList.remove('loading');
+        if (btn.dataset.original) btn.innerHTML = btn.dataset.original;
+      }
+    }
+
+    async function participantLogin(e) {
+      e.preventDefault();
+      const name = document.getElementById('p-name').value.trim();
+      const roll = document.getElementById('p-roll').value.trim();
+      const email = document.getElementById('p-email').value.trim();
+      const errEl = document.getElementById('p-error');
+      const sucEl = document.getElementById('p-success');
+
+      errEl.classList.remove('visible');
+      sucEl.classList.remove('visible');
+
+      // Clear field errors
+      ['name-field','roll-field','email-field'].forEach(id => {
+        document.getElementById(id).classList.remove('error');
+      });
+
+      setLoading('p-submit-btn', true, '◌ VERIFYING IDENTITY…');
+
+      const existingToken = API.getSession();
+      const r = await API.post('/api/participant/login', {
+        name, roll_number: roll, email,
+        session_token: existingToken
+      });
+
+      setLoading('p-submit-btn', false);
+
+      if (r.ok) {
+        API.setSession(r.data.session_token);
+        sucEl.classList.add('visible');
+        setTimeout(() => { window.location.href = '/participant.html'; }, 800);
+      } else {
+        const err = r.error;
+        let msg = err?.message || 'Login failed. Please check your details.';
+        errEl.textContent = msg;
+        errEl.classList.add('visible');
+
+        // Shake form
+        document.getElementById('participant-card').style.animation = 'shake 0.4s ease';
+        setTimeout(() => { document.getElementById('participant-card').style.animation = ''; }, 500);
+      }
+    }
+
+    async function adminLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('a-username').value.trim();
+      const password = document.getElementById('a-password').value;
+      const errEl = document.getElementById('a-error');
+      errEl.classList.remove('visible');
+
+      setLoading('a-submit-btn', true, '◌ AUTHENTICATING…');
+
+      const r = await API.post('/api/admin/login', { username, password });
+      setLoading('a-submit-btn', false);
+
+      if (r.ok) {
+        API.setAdminToken(r.data.admin_token);
+        window.location.href = '/admin.html';
+      } else {
+        const msg = r.error?.message || 'Invalid credentials.';
+        errEl.textContent = msg;
+        errEl.classList.add('visible');
+        document.getElementById('admin-card').style.animation = 'shake 0.4s ease';
+        setTimeout(() => { document.getElementById('admin-card').style.animation = ''; }, 500);
+      }
+    }
+  </script>
+</body>
+</html>

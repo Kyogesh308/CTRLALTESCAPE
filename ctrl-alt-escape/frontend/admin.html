@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTRL + ALT + ESCAPE | Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body { background: var(--surface-2); min-height: 100vh; }
+
+    /* ====== ADMIN SHELL ====== */
+    .admin-header {
+      height: 60px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-brand { display: flex; align-items: center; gap: 10px; }
+    .admin-brand span { font-size: 20px; }
+    .admin-title { font-size: 16px; font-weight: 800; color: var(--text); }
+    .admin-tag { background: var(--danger-l); color: var(--danger); font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: var(--r-full); letter-spacing: 0.05em; }
+
+    .admin-layout { display: flex; min-height: calc(100vh - 60px); }
+    .admin-sidebar {
+      width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 0;
+    }
+    .admin-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--r-md);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-sec);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .admin-nav-item:hover { background: var(--surface-2); color: var(--text); }
+    .admin-nav-item.active { background: var(--primary); color: #fff; box-shadow: var(--shadow-sm); }
+    .admin-nav-badge {
+      margin-left: auto;
+      background: var(--danger);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: var(--r-full);
+    }
+
+    .admin-content { flex: 1; min-width: 0; padding: 24px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
+    .admin-view { display: none; }
+    .admin-view.active { display: block; animation: fade-in 0.3s ease; }
+
+    /* ====== OVERVIEW CARDS ====== */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stat-label { font-size: 12px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat-sub { font-size: 12px; color: var(--text-sec); }
+
+    /* ====== TABLES ====== */
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+    }
+    .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .admin-table th {
+      padding: 12px 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-sec);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .admin-table td {
+      padding: 14px 20px;
+      font-size: 13px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover { background: var(--surface-2); }
+
+    /* ====== REVIEW CARDS ====== */
+    .review-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .review-card {
+      background: var(--surface);
+      border: 1.5px solid var(--primary);
+      border-radius: var(--r-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(79,70,229,0.1);
+    }
+    .review-header { display: flex; justify-content: space-between; align-items: center; }
+    .review-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .review-section { background: var(--surface-2); padding: 16px; border-radius: var(--r-md); border: 1px solid var(--border); }
+    .review-section h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-sec); margin-bottom: 8px; }
+    .review-actions { display: flex; gap: 10px; margin-top: auto; }
+
+    /* ====== CONTROLS ====== */
+    .control-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; }
+    .control-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--surface-2); }
+    .control-row:last-child { border-bottom: none; }
+
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    .admin-team-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; cursor: pointer; transition: all var(--transition); }
+    .admin-team-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); }
+
+  </style>
+</head>
+<body>
+
+<header class="admin-header">
+  <div class="admin-brand">
+    <span>👑</span>
+    <div class="admin-title">CTRL+ALT+ESCAPE <span class="admin-tag">ADMIN</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span class="chip chip-primary" id="event-phase-badge">LOADING…</span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<div class="admin-layout">
+  <nav class="admin-sidebar">
+    <div class="admin-nav">
+      <a class="admin-nav-item active" id="nav-overview" onclick="showView('overview')">📊 Overview</a>
+      <a class="admin-nav-item" id="nav-submissions" onclick="showView('submissions')">
+        📥 Submissions <span class="admin-nav-badge hidden" id="sub-badge">0</span>
+      </a>
+      <a class="admin-nav-item" id="nav-teams" onclick="showView('teams')">👥 Teams</a>
+      <a class="admin-nav-item" id="nav-participants" onclick="showView('participants')">🧑‍💻 Participants</a>
+      <a class="admin-nav-item" id="nav-leaderboard" onclick="showView('leaderboard')">🏆 Leaderboard</a>
+      <a class="admin-nav-item" id="nav-controls" onclick="showView('controls')">⚙️ Event Controls</a>
+      <a class="admin-nav-item" id="nav-challenges" onclick="showView('challenges')">🔑 Challenges (Ans)</a>
+    </div>
+  </nav>
+
+  <main class="admin-content">
+
+    <!-- OVERVIEW VIEW -->
+    <div class="admin-view active" id="view-overview">
+      <h2 style="font-size:24px;font-weight:800;margin-bottom:16px;">System Overview</h2>
+
+      <div id="alerts-container" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;"></div>
+
+      <div class="stat-grid" style="margin-bottom:24px;">
+        <div class="stat-card">
+          <div class="stat-label">Participants Logged In</div>
+          <div class="stat-value" id="stat-p-logged">0</div>
+          <div class="stat-sub">Out of <span id="stat-p-total">0</span> total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Placeholders Claimed</div>
+          <div class="stat-value" id="stat-p-claimed">0</div>
+          <div class="stat-sub"><span id="stat-p-unclaimed">0</span> unclaimed remaining</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Teams</div>
+          <div class="stat-value" id="stat-t-active">0</div>
+          <div class="stat-sub">Out of <span id="stat-t-total">0</span> total teams</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Orphans (No Team)</div>
+          <div class="stat-value" id="stat-p-noteam" style="color:var(--warning);">0</div>
+          <div class="stat-sub">Logged in, but teamless</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header"><h3 style="font-size:16px;font-weight:700;">Live Event Feed</h3></div>
+        <table class="admin-table">
+          <thead><tr><th>Time</th><th>Event</th><th>Actor/Team</th><th>Details</th></tr></thead>
+          <tbody id="feed-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUBMISSIONS VIEW -->
+    <div class="admin-view" id="view-submissions">
+      <h2 style="font-size:24px;font-weight:800;margin-bottom:16px;">Pending Submissions</h2>
+      <div class="review-grid" id="pending-subs-container">
+        <div class="empty-state"><div class="empty-state-text">No pending submissions</div></div>
+      </div>
+    </div>
+
+    <!-- TEAMS VIEW -->
+    <div class="admin-view" id="view-teams">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="font-size:24px;font-weight:800;">Teams</h2>
+        <div style="display:flex;gap:10px;">
+          <input type="text" id="team-search" placeholder="Search teams…" class="input input-sm" oninput="renderTeamsList()">
+        </div>
+      </div>
+      <div class="team-grid" id="teams-grid-container"></div>
+    </div>
+
+    <!-- PARTICIPANTS VIEW -->
+    <div class="admin-view" id="view-participants">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="font-size:24px;font-weight:800;">Participants</h2>
+        <div style="display:flex;gap:10px;">
+          <input type="text" id="part-search" placeholder="Search by name/roll…" class="input" style="width:250px;" oninput="debounceSearchPart()">
+          <button class="btn btn-secondary" onclick="reloadParticipants()">🔄 Reload Excel</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Roll No</th><th>Name</th><th>Team</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="part-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD VIEW -->
+    <div class="admin-view" id="view-leaderboard">
+      <h2 style="font-size:24px;font-weight:800;margin-bottom:16px;">Live Leaderboard</h2>
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Rank</th><th>Team</th><th>Levels</th><th>Hints</th><th>Violations</th><th>Status</th></tr>
+          </thead>
+          <tbody id="leaderboard-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONTROLS VIEW -->
+    <div class="admin-view" id="view-controls">
+      <h2 style="font-size:24px;font-weight:800;margin-bottom:16px;">Event Controls</h2>
+      <div class="stat-grid" style="align-items:start;">
+        <div class="control-panel">
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--primary);">Phase Management</h3>
+          <div class="control-row">
+            <div>
+              <div style="font-weight:600;">1. Open Team Formation</div>
+              <div style="font-size:12px;color:var(--text-sec);">Allow players to create teams and send invites.</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="setPhase('open-formation')">Open</button>
+          </div>
+          <div class="control-row">
+            <div>
+              <div style="font-weight:600;">2. Lock Team Formation</div>
+              <div style="font-size:12px;color:var(--text-sec);">Stop new invites. (Done before starting)</div>
+            </div>
+            <button class="btn btn-warning btn-sm" onclick="setPhase('lock-formation')">Lock</button>
+          </div>
+          <div class="control-row">
+            <div>
+              <div style="font-weight:600;color:var(--success);">3. START EVENT</div>
+              <div style="font-size:12px;color:var(--text-sec);">Start timer for all ready teams. Level 1 unlocks.</div>
+            </div>
+            <button class="btn btn-success" onclick="startEvent()">START EVENT</button>
+          </div>
+        </div>
+
+        <div class="control-panel">
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--warning);">Emergency Controls</h3>
+          <div class="control-row">
+            <div>
+              <div style="font-weight:600;">Pause Entire Event</div>
+              <div style="font-size:12px;color:var(--text-sec);">Freezes all timers globally.</div>
+            </div>
+            <button class="btn btn-warning btn-sm" onclick="setPhase('pause')">Pause All</button>
+          </div>
+          <div class="control-row">
+            <div>
+              <div style="font-weight:600;">Resume Entire Event</div>
+              <div style="font-size:12px;color:var(--text-sec);">Unfreezes timers and restores time lost.</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="setPhase('resume')">Resume All</button>
+          </div>
+          <div class="control-row">
+            <div>
+              <div style="font-weight:600;">Unlock Specific Level</div>
+              <div style="font-size:12px;color:var(--text-sec);">Unlock a level for ALL active teams.</div>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <input type="number" id="global-unlock-lvl" min="1" max="6" value="2" style="width:50px;padding:4px;">
+              <button class="btn btn-danger btn-sm" onclick="globalUnlock()">Unlock</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <div>
+              <div style="font-weight:600;">Add Time to All Active</div>
+              <div style="font-size:12px;color:var(--text-sec);">Grant extra time globally.</div>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <input type="number" id="global-add-time" value="300" style="width:70px;padding:4px;">
+              <button class="btn btn-accent btn-sm" onclick="globalAddTime()">Add (sec)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHALLENGES VIEW -->
+    <div class="admin-view" id="view-challenges">
+      <h2 style="font-size:24px;font-weight:800;margin-bottom:16px;">Challenges &amp; Answer Key</h2>
+      <div id="challenges-container" style="display:flex;flex-direction:column;gap:16px;"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Team Detail Modal -->
+<div class="modal-overlay hidden" id="team-modal">
+  <div class="modal" style="width:800px;max-width:90vw;">
+    <div class="modal-header">
+      <h3 style="font-size:20px;font-weight:800;" id="tm-title">Team Detail</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeTeamModal()">✕</button>
+    </div>
+    <div id="tm-body">Loading…</div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="/js/api.js"></script>
+<script>
+let state = {
+  overview: null,
+  participants: [],
+  teams: [],
+  submissions: [],
+  challenges: [],
+  leaderboard: [],
+  currentView: 'overview',
+  searchTimeout: null,
+  partSearch: ''
+};
+
+async function init() {
+  if (!API.getAdminToken()) { window.location.href = '/'; return; }
+  await fetchOverview();
+  setInterval(fetchOverview, 5000); // Polling every 5s
+  showView('overview');
+}
+
+async function fetchOverview() {
+  const r = await API.get('/api/admin/overview');
+  if (r.ok) {
+    state.overview = r.data;
+    renderOverview();
+    // Update badge
+    const subBadge = document.getElementById('sub-badge');
+    if (r.data.pending_submissions > 0) {
+      subBadge.textContent = r.data.pending_submissions;
+      subBadge.classList.remove('hidden');
+    } else {
+      subBadge.classList.add('hidden');
+    }
+  } else {
+    if (r.status === 401) window.location.href = '/';
+  }
+}
+
+function renderOverview() {
+  const d = state.overview;
+  if (!d) return;
+
+  document.getElementById('event-phase-badge').textContent = d.phase;
+  if (d.event_paused) {
+    document.getElementById('event-phase-badge').textContent += ' (PAUSED)';
+    document.getElementById('event-phase-badge').className = 'chip chip-warning';
+  } else {
+    document.getElementById('event-phase-badge').className = 'chip chip-primary';
+  }
+
+  document.getElementById('stat-p-logged').textContent = d.participants.logged_in;
+  document.getElementById('stat-p-total').textContent = d.participants.total;
+  document.getElementById('stat-p-claimed').textContent = d.participants.claimed;
+  document.getElementById('stat-p-unclaimed').textContent = d.participants.unclaimed_placeholders;
+  document.getElementById('stat-t-active').textContent = d.teams.playing;
+  document.getElementById('stat-t-total').textContent = d.teams.total;
+  document.getElementById('stat-p-noteam').textContent = d.participants.no_team;
+
+  // Alerts
+  const alertsEl = document.getElementById('alerts-container');
+  alertsEl.innerHTML = d.alerts.map(a => `
+    <div style="background:var(--danger-l);border-left:4px solid var(--danger);padding:10px 14px;border-radius:4px;display:flex;align-items:center;gap:10px;">
+      <span>⚠️</span>
+      <span style="font-size:14px;font-weight:600;color:var(--danger);">${a.message}</span>
+    </div>
+  `).join('');
+
+  if (state.currentView === 'overview') fetchFeed();
+}
+
+async function fetchFeed() {
+  const r = await API.get('/api/admin/feed');
+  if (r.ok) {
+    const tbody = document.getElementById('feed-tbody');
+    tbody.innerHTML = r.data.events.map(e => `
+      <tr>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);">${new Date(e.timestamp).toLocaleTimeString()}</td>
+        <td><span class="chip chip-primary">${e.event_type}</span></td>
+        <td style="font-weight:600;">${e.team_name || e.participant_name || e.team_id || 'System'}</td>
+        <td style="font-size:12px;">${e.details || ''}</td>
+      </tr>
+    `).join('');
+  }
+}
+
+async function fetchSubmissions() {
+  const r = await API.get('/api/admin/submissions?status=PENDING');
+  if (r.ok) {
+    state.submissions = r.data.submissions;
+    renderSubmissions();
+  }
+}
+
+function renderSubmissions() {
+  const cont = document.getElementById('pending-subs-container');
+  if (!state.submissions.length) {
+    cont.innerHTML = '<div class="empty-state"><div class="empty-state-text">No pending submissions</div></div>';
+    return;
+  }
+  cont.innerHTML = state.submissions.map(s => `
+    <div class="review-card" id="sub-${s.id}">
+      <div class="review-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:18px;font-weight:800;color:var(--primary);">LEVEL ${s.level_number}</span>
+          <span class="chip chip-accent">TEAM: ${s.team_name}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-sec);">Hints used: ${s.hints_used_list.join(', ') || 'None'}</div>
+      </div>
+      <div class="review-body">
+        <div class="review-section" style="border-color:${s.matches_expected ? 'var(--success)' : 'var(--warning)'};">
+          <h4>Team's Answer (Auto-match: ${s.matches_expected ? '✅ YES' : '❌ NO'})</h4>
+          <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;">${s.answer}</div>
+        </div>
+        <div class="review-section">
+          <h4>Expected Answer</h4>
+          <div style="font-family:var(--font-mono);font-size:16px;color:var(--success);font-weight:700;">${s.expected_answer}</div>
+        </div>
+      </div>
+      <div class="review-section" style="background:var(--surface);">
+        <h4>Explanation</h4>
+        <div style="font-size:14px;">${s.explanation}</div>
+      </div>
+      <div class="review-actions">
+        <input type="text" id="note-${s.id}" placeholder="Optional note for team…" class="input" style="flex:1;">
+        <button class="btn btn-danger" onclick="reviewSub(${s.id}, 'reject')">❌ Reject</button>
+        <button class="btn btn-success" onclick="reviewSub(${s.id}, 'approve')">✅ Approve</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function reviewSub(id, action) {
+  const note = document.getElementById(`note-${id}`).value;
+  const r = await API.post(`/api/admin/submissions/${id}/${action}`, { admin_note: note });
+  if (r.ok) {
+    showToast(`Submission ${action}d.`, 'success');
+    document.getElementById(`sub-${id}`).remove();
+    fetchOverview();
+  } else {
+    showToast(r.error?.message || 'Error processing review', 'error');
+  }
+}
+
+async function fetchTeams() {
+  const r = await API.get('/api/admin/teams');
+  if (r.ok) {
+    state.teams = r.data.teams;
+    renderTeamsList();
+  }
+}
+
+function renderTeamsList() {
+  const q = document.getElementById('team-search')?.value.toLowerCase() || '';
+  const cont = document.getElementById('teams-grid-container');
+  const filtered = state.teams.filter(t => t.name.toLowerCase().includes(q));
+
+  cont.innerHTML = filtered.map(t => {
+    const activeLvl = t.levels.find(l => l.status === 'ACTIVE' || l.status === 'UNDER_REVIEW');
+    const lvlText = activeLvl ? `L${activeLvl.level_number} (${activeLvl.status === 'UNDER_REVIEW' ? 'Reviewing' : Math.floor(activeLvl.remaining_seconds/60)+'m'})` : (t.status === 'COMPLETED' ? 'Finished' : 'Waiting');
+    return `
+      <div class="admin-team-card" onclick="openTeamModal('${t.id}')">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-weight:700;font-size:16px;">${t.name}</div>
+          <span class="chip chip-${t.status==='PLAYING'?'primary':t.status==='ELIMINATED'?'danger':t.status==='COMPLETED'?'success':'locked'}">${t.status}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-sec);">
+          <span>👥 ${t.size} members</span>
+          <span>${t.paused ? '⏸️ PAUSED' : lvlText}</span>
+        </div>
+        ${t.violations > 0 ? `<div style="margin-top:8px;font-size:11px;color:var(--danger);font-weight:600;">⚠️ ${t.violations} violations</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+async function openTeamModal(id) {
+  const r = await API.get(`/api/admin/teams/${id}`);
+  if (!r.ok) return;
+  const d = r.data;
+  const t = d.team;
+  document.getElementById('tm-title').textContent = `Team: ${t.name}`;
+
+  let html = `
+    <div style="display:flex;gap:20px;margin-bottom:20px;">
+      <div class="stat-card" style="flex:1;"><div class="stat-label">Status</div><div class="stat-value" style="font-size:20px;">${t.status}${t.paused?' (PAUSED)':''}</div></div>
+      <div class="stat-card" style="flex:1;"><div class="stat-label">Current Lvl</div><div class="stat-value" style="font-size:20px;">${t.current_level || '-'}</div></div>
+      <div class="stat-card" style="flex:1;"><div class="stat-label">Violations</div><div class="stat-value" style="font-size:20px;color:var(--danger);">${d.violations.length}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <h4 style="font-size:14px;font-weight:700;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:4px;">Members</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${d.members.map(m => `
+            <div style="display:flex;justify-content:space-between;background:var(--surface-2);padding:8px;border-radius:4px;font-size:13px;">
+              <div><strong>${m.name}</strong> <span style="color:var(--text-sec);font-size:11px;">(${m.roll_number})</span> ${m.id === t.leader_id ? '👑' : ''}</div>
+              <button class="btn btn-ghost btn-sm" style="padding:0 4px;color:var(--danger);" onclick="teamAction('${t.id}', 'remove-member', ${m.id})">Remove</button>
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:8px;display:flex;gap:4px;">
+          <input type="number" id="add-member-id" placeholder="Participant ID" class="input input-sm" style="flex:1;">
+          <button class="btn btn-secondary btn-sm" onclick="teamAction('${t.id}', 'add-member')">Add</button>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size:14px;font-weight:700;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:4px;">Level States</h4>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;">
+          ${d.levels.map(l => `
+            <div style="display:flex;justify-content:space-between;">
+              <span>L${l.level_number}: <strong style="color:var(--primary);">${l.status}</strong></span>
+              <span>${l.allowed_seconds ? Math.floor(l.allowed_seconds/60)+'m' : '-'}</span>
+            </div>`).join('')}
+        </div>
+        <h4 style="font-size:14px;font-weight:700;margin-top:16px;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:4px;">Admin Actions</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${t.paused ? `<button class="btn btn-success btn-sm" onclick="teamAction('${t.id}', 'resume')">▶ Resume</button>` : `<button class="btn btn-warning btn-sm" onclick="teamAction('${t.id}', 'pause')">⏸ Pause</button>`}
+          ${t.status !== 'ELIMINATED' ? `<button class="btn btn-danger btn-sm" onclick="teamAction('${t.id}', 'eliminate')">☠️ Eliminate</button>` : `<button class="btn btn-accent btn-sm" onclick="teamAction('${t.id}', 'restore')">🔄 Restore</button>`}
+          <button class="btn btn-secondary btn-sm" onclick="teamAction('${t.id}', 'add-time')">+ 5 Mins</button>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:4px;">
+          <input type="number" id="unlock-lvl-id" min="1" max="6" value="${(t.current_level||0)+1}" class="input input-sm" style="width:60px;">
+          <button class="btn btn-outline btn-sm" onclick="teamAction('${t.id}', 'unlock-level')">Unlock Level</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('tm-body').innerHTML = html;
+  document.getElementById('team-modal').classList.remove('hidden');
+}
+
+function closeTeamModal() {
+  document.getElementById('team-modal').classList.add('hidden');
+  fetchTeams(); // refresh list behind it
+}
+
+async function teamAction(teamId, action, partId = null) {
+  let body = {};
+  if (action === 'add-time') body.seconds = 300;
+  if (action === 'add-member') body.participant_id = parseInt(document.getElementById('add-member-id').value);
+  if (action === 'remove-member') body.participant_id = partId;
+  if (action === 'unlock-level') body.level_number = parseInt(document.getElementById('unlock-lvl-id').value);
+
+  if (action === 'eliminate' && !confirm('Are you sure you want to eliminate this team?')) return;
+
+  const r = await API.post(`/api/admin/teams/${teamId}/${action}`, body);
+  if (r.ok) {
+    showToast(`Action ${action} successful.`, 'success');
+    openTeamModal(teamId); // reload modal
+  } else {
+    showToast(r.error?.message || 'Action failed', 'error');
+  }
+}
+
+function debounceSearchPart() {
+  clearTimeout(state.searchTimeout);
+  state.partSearch = document.getElementById('part-search').value;
+  state.searchTimeout = setTimeout(fetchParticipants, 400);
+}
+
+async function fetchParticipants() {
+  const r = await API.get(`/api/admin/participants?search=${encodeURIComponent(state.partSearch)}`);
+  if (r.ok) {
+    state.participants = r.data.participants;
+    renderParticipants();
+  }
+}
+
+function renderParticipants() {
+  const tbody = document.getElementById('part-tbody');
+  tbody.innerHTML = state.participants.map(p => `
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:12px;">${p.roll_number}</td>
+      <td>
+        <div style="font-weight:600;">${p.name}</div>
+        ${p.is_placeholder ? `<span class="chip chip-${p.claimed?'success':'warning'}" style="font-size:9px;">${p.claimed?'CLAIMED':'PLACEHOLDER'}</span>` : ''}
+      </td>
+      <td>${p.team_name || '-'}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:${p.online ? 'var(--online)' : 'var(--offline)'};"></span>
+          ${p.logged_in ? 'Logged In' : 'Registered'}
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          ${p.logged_in ? `<button class="btn btn-ghost btn-sm" style="color:var(--warning);" title="Reset Session" onclick="partAction(${p.id}, 'reset-session')">🔄</button>` : ''}
+          ${p.is_placeholder && p.claimed && !p.team_id ? `<button class="btn btn-ghost btn-sm" style="color:var(--danger);" title="Unclaim" onclick="partAction(${p.id}, 'unclaim')">Unclaim</button>` : ''}
+          <span style="font-size:10px;color:var(--text-sec);">ID:${p.id}</span>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function partAction(id, action) {
+  if (action === 'unclaim' && !confirm('Are you sure you want to unclaim this placeholder?')) return;
+  const r = await API.post(`/api/admin/participants/${id}/${action}`);
+  if (r.ok) {
+    showToast('Success', 'success');
+    fetchParticipants();
+  } else {
+    showToast(r.error?.message || 'Failed', 'error');
+  }
+}
+
+async function reloadParticipants() {
+  if (!confirm('Reload from CSV/Excel? This will update names and eligibility but will not overwrite claimed placeholders.')) return;
+  const r = await API.post('/api/admin/reload-participants');
+  if (r.ok) {
+    showToast(`Reloaded. Inserted: ${r.data.stats.inserted}, Updated: ${r.data.stats.updated}`, 'success');
+    fetchParticipants();
+  }
+}
+
+async function fetchLeaderboard() {
+  const r = await API.get('/api/admin/leaderboard');
+  if (r.ok) {
+    const tbody = document.getElementById('leaderboard-tbody');
+    tbody.innerHTML = r.data.leaderboard.map((t, i) => `
+      <tr>
+        <td style="font-size:18px;font-weight:800;">#${i+1}</td>
+        <td>
+          <div style="font-weight:700;font-size:14px;">${t.team_name}</div>
+          <div style="font-size:11px;color:var(--text-sec);">${t.members.map(m=>m.name).join(', ')}</div>
+        </td>
+        <td style="font-size:18px;font-weight:800;color:var(--primary);">${t.levels_completed}</td>
+        <td>${t.total_hints}</td>
+        <td style="color:${t.total_violations>0?'var(--danger)':'inherit'};">${t.total_violations}</td>
+        <td><span class="chip chip-${t.status==='COMPLETED'?'success':t.status==='PLAYING'?'primary':'danger'}">${t.status}</span></td>
+      </tr>
+    `).join('');
+  }
+}
+
+async function fetchChallenges() {
+  const r = await API.get('/api/admin/challenges');
+  if (r.ok) {
+    const cont = document.getElementById('challenges-container');
+    cont.innerHTML = r.data.challenges.map(c => `
+      <div class="card">
+        <h3 style="font-size:16px;font-weight:800;color:var(--primary);margin-bottom:12px;">Level ${c.level} — ${c.title}</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div style="background:var(--surface-2);padding:12px;border-radius:8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text-sec);text-transform:uppercase;margin-bottom:4px;">Expected Answer</div>
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--success);">${c.expected_answer}</div>
+            ${c.accepted_variants?.length ? `<div style="font-size:11px;color:var(--text-sec);margin-top:4px;">Variants: ${c.accepted_variants.join(', ')}</div>` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="background:var(--surface-2);padding:8px 12px;border-radius:8px;font-size:12px;"><strong>Hint 1:</strong> ${c.hint1}</div>
+            <div style="background:var(--surface-2);padding:8px 12px;border-radius:8px;font-size:12px;"><strong>Hint 2:</strong> ${c.hint2}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+async function setPhase(action) {
+  const r = await API.post(`/api/admin/event/${action}`);
+  if (r.ok) { showToast(`Event phase updated to ${action}`, 'success'); fetchOverview(); }
+  else showToast(r.error?.message, 'error');
+}
+
+async function startEvent() {
+  if (!confirm('Start event? This unlocks Level 1 for all ready teams.')) return;
+  const r = await API.post('/api/admin/event/start');
+  if (r.ok) {
+    showToast(`Event started! ${r.data.teams_started} teams playing.`, 'success');
+    if (r.data.warnings.length) alert('Warnings:\n' + r.data.warnings.join('\n'));
+    fetchOverview();
+  } else showToast(r.error?.message, 'error');
+}
+
+async function globalUnlock() {
+  const lvl = parseInt(document.getElementById('global-unlock-lvl').value);
+  if (!confirm(`Unlock Level ${lvl} for ALL playing teams?`)) return;
+  const r = await API.post('/api/admin/event/unlock-all', { level_number: lvl });
+  if (r.ok) showToast(`Unlocked for ${r.data.teams_affected} teams.`, 'success');
+}
+
+async function globalAddTime() {
+  const secs = parseInt(document.getElementById('global-add-time').value);
+  if (!confirm(`Add ${secs}s to all active levels globally?`)) return;
+  const r = await API.post('/api/admin/event/add-time-all', { seconds: secs });
+  if (r.ok) showToast(`Added ${secs}s globally.`, 'success');
+}
+
+function showView(name) {
+  state.currentView = name;
+  document.querySelectorAll('.admin-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  document.getElementById(`nav-${name}`).classList.add('active');
+
+  if (name === 'overview') fetchOverview();
+  if (name === 'submissions') fetchSubmissions();
+  if (name === 'teams') fetchTeams();
+  if (name === 'participants') fetchParticipants();
+  if (name === 'leaderboard') fetchLeaderboard();
+  if (name === 'challenges') fetchChallenges();
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  toast.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span style="flex:1;font-size:13px;">${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.classList.add('removing'); setTimeout(() => toast.remove(), 300); }, 4000);
+}
+
+function logout() {
+  API.setAdminToken(null);
+  window.location.href = '/';
+}
+
+init();
+</script>
+</body>
+</html>
