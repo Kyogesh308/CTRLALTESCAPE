@@ -1,3 +1,15 @@
 [build]
-  base = "."
+  base    = "."
   publish = "ctrl-alt-escape/frontend"
+  command = "sed -i \"s|REPLACE_API_URL|$API_BASE_URL|g\" ctrl-alt-escape/frontend/config.js"
+
+[build.environment]
+  # API_BASE_URL must be set in Netlify dashboard:
+  # Site > Settings > Build & deploy > Environment variables
+  # e.g. API_BASE_URL = https://ctrl-alt-escape-backend.onrender.com
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"

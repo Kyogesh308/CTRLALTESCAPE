@@ -4,7 +4,11 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'event.db')
+DB_PATH = os.getenv(
+    'DB_PATH',
+    os.path.join(os.path.dirname(__file__), '..', 'data', 'event.db')
+)
+
 _local = threading.local()
 
 def get_conn():
