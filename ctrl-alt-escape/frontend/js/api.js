@@ -1,5 +1,8 @@
 // api.js — Fetch wrapper with session token, error handling, and connection indicator
-const API_BASE = '';
+// API_BASE_URL is injected by /config.js (served by Netlify or FastAPI).
+// Falls back to '' (same-origin) for local dev where FastAPI serves the frontend.
+const API_BASE = (typeof window !== 'undefined' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+
 
 let _session = localStorage.getItem('cae_session') || null;
 let _adminToken = sessionStorage.getItem('cae_admin_token') || null;
