@@ -1408,6 +1408,17 @@ function renderGameView() {
   const el = document.getElementById('game-content');
   if (!el) return;
 
+  // Preserve live input values and focus so polling re-renders don't steal focus
+  const _answerEl = document.getElementById('answer-input');
+  const _explEl   = document.getElementById('explanation-input');
+  const _focusedId = document.activeElement?.id;
+  const _answerVal = _answerEl ? _answerEl.value : null;
+  const _explVal   = _explEl   ? _explEl.value   : null;
+  const _answerSel = _answerEl && _focusedId === 'answer-input'
+    ? { start: _answerEl.selectionStart, end: _answerEl.selectionEnd } : null;
+  const _explSel   = _explEl   && _focusedId === 'explanation-input'
+    ? { start: _explEl.selectionStart,   end: _explEl.selectionEnd   } : null;
+
   if (!gs || !gs.has_team) {
     el.innerHTML = '<div class="card"><div class="empty-state"><div class="empty-state-icon">⏳</div><div class="empty-state-text">Waiting for game to start…</div></div></div>';
     return;
@@ -1538,6 +1549,22 @@ function renderGameView() {
     const m = Math.floor(fd/60), s = fd%60;
     const el2 = document.getElementById('timer-digits');
     if (el2) el2.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  // Restore live-typed values and focus after DOM rebuild
+  if (_answerVal !== null) {
+    const a = document.getElementById('answer-input');
+    if (a) {
+      a.value = _answerVal;
+      if (_answerSel) { a.focus(); a.setSelectionRange(_answerSel.start, _answerSel.end); }
+    }
+  }
+  if (_explVal !== null) {
+    const x = document.getElementById('explanation-input');
+    if (x) {
+      x.value = _explVal;
+      if (_explSel) { x.focus(); x.setSelectionRange(_explSel.start, _explSel.end); }
+    }
   }
 }
 
@@ -2077,8 +2104,14 @@ function setupMonitoring() {
     if (document.hidden && !_graceActive) handleViolation();
   });
   window.addEventListener('blur', () => {
-    // Ignore blur from our own modals
+    // Ignore blur from our own modals/popups
     if (document.activeElement?.closest('.modal, .request-popup, .violation-overlay')) return;
+    // Ignore blur when focus is still within the page (e.g. clicking into a textarea)
+    if (document.hasFocus()) return;
+    // Ignore blur when an input/textarea/select/button inside the page is focused
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'button') return;
+    if (document.activeElement?.isContentEditable) return;
     if (!_graceActive) handleViolation();
   });
 
